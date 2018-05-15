@@ -95,14 +95,18 @@ int main() {
           for(unsigned int i=0;i<ptsx.size();i++){
             double shift_x=ptsx[i]-px;
             double shift_y=ptsy[i]-py;
-            ptsx[i]=(shift_x*cos(-psi)-shift_y*sin(-psi));
-            ptsy[i]=(shift_x*sin(-psi)+shift_y*cos(-psi));
+            ptsx[i]=(shift_x*cos(0-psi)-shift_y*sin(0-psi));
+            ptsy[i]=(shift_x*sin(0-psi)+shift_y*cos(0-psi));
           }
+
           double* ptrx=&ptsx[0];
           Eigen::Map<Eigen::VectorXd> ptsx_transform(ptrx,6);
+
           double* ptry=&ptsy[0];
           Eigen::Map<Eigen::VectorXd> ptsy_transform(ptry,6);
+
           auto coeffs=polyfit(ptsx_transform,ptsy_transform,3);
+
           double cte=polyeval(coeffs,0);
           double epsi=-atan(coeffs[1]);
 
@@ -117,11 +121,32 @@ int main() {
 
           Eigen::VectorXd state(6);
           state << 0,0,0,v,cte,epsi;
+
+	  // adding delay
+	  const double delay_t = 0.1;
+	  const double Lf = 2.67;
+          // based upon t-1 steer and throttle values
+          steer_value = j[1]["steering_angle"];
+          throttle_value = j[1]["throttle"];
+
+	  // embed the actuator delay into new state vector simulating the delay
+	  double delayed_x = v * delay_t;
+	  double delayed_y = 0;
+	  double delayed_psi = - v * steer_value / Lf * delay_t;
+	  double delayed_v = v + throttle_value * delay_t;
+	  double delayed_cte = cte + v * sin(epsi) * delay_t;
+	  double delayed_epsi = epsi - v * steer_value / Lf * delay_t;
+
+          state << delayed_x, delayed_y, delayed_psi, delayed_v, delayed_cte, delayed_epsi;
+
+          // *********** SOLVE ***************
           auto vars=mpc.Solve(state,coeffs);
 
-          double Lf=2.67;
+          // Values to send to the simulator
           steer_value=vars[0]/(deg2rad(25)*Lf);
           throttle_value=vars[1];
+          //steer_value=0;
+          //throttle_value=0.5;
 
 
           json msgJson;
