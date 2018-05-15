@@ -8,7 +8,7 @@ Yes, it compiles.
 
 # Implementation
 ## The Model
-The model kinematic expresions are the one viwed on the lesson.
+The model kinematic expresions are the one viewed on the lesson.
 
      fg[2+x_start   +i]= x1 - (x0 + v0*CppAD::cos(psi0) * dt);
      fg[2+y_start   +i]= y1 - (y0 + v0*CppAD::sin(psi0) * dt);
@@ -17,16 +17,20 @@ The model kinematic expresions are the one viwed on the lesson.
      fg[2+cte_start +i]=cte1 - ( (f0 - y0) + (v0 * CppAD::sin(epsi0) * dt));
      fg[2+epsi_start+i]=epsi1 - ((psi0 - psides0) - v0*delta0/Lf * dt);   
      
- I main problem I had with this project was a typo error in
+ The main problem I had with this project was a typo error in
  
      fg[2+cte_start +i]=cte1 - ( (f0 - y0) + (v0 * CppAD::sin(epsi0) * dt));
      
 where I had a operator error: (f0 - y0) + (v0 - CppAD::sin(epsi0) * dt, change * by -. And all was bad.
+
 The main dificulty with this project is that it is very dificult to debug, and a minimal operator o sign error make all work wrong with any compilation error or idea where it is.
 
 ## Timestep Length and Elapsed Duration (N & dt)
 As lower dt and bigger N, the better result should be. But this is at the price of power computation. 
-I choosed N=10 and dt=0.1, a bigger value for N don't five a neglectable improvement, since I just keep the first prediction. I think in a real car dt would be 0.03 or lower in order to have a better time response. But it is not needed on for the simulator case.
+
+I choosed N=10 and dt=0.1, a bigger value for N don't five a neglectable improvement, since I just keep the first prediction. 
+
+I think in a real car dt would be 0.03 or lower in order to have a better time response. But it is not needed on for the simulator case.
 
 ## Polynomial Fitting and MPC Preprocessing
 Using the Self-Driving Car Project Q&A | MPC Controller suggestion, I changed coordinates from global to vehicle local:
